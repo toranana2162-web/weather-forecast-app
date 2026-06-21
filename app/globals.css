@@ -1,0 +1,433 @@
+:root {
+  --card-bg: rgba(255, 255, 255, 0.14);
+  --card-border: rgba(255, 255, 255, 0.28);
+  --text: #ffffff;
+  --text-dim: rgba(255, 255, 255, 0.78);
+  --shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  --radius: 20px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic UI",
+    "Meiryo", system-ui, -apple-system, sans-serif;
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ===== 天気ごとの背景テーマ ===== */
+.app {
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+  transition: background 0.8s ease;
+  overflow-x: hidden;
+}
+.theme-default {
+  background: linear-gradient(160deg, #4b6cb7 0%, #182848 100%);
+}
+.theme-clear {
+  background: linear-gradient(160deg, #2980b9 0%, #6dd5fa 60%, #ffd194 100%);
+}
+.theme-cloud {
+  background: linear-gradient(160deg, #5c6e7e 0%, #8e9eab 50%, #bdc3c7 100%);
+}
+.theme-rain {
+  background: linear-gradient(160deg, #283e51 0%, #485563 50%, #4b79a1 100%);
+}
+.theme-thunder {
+  background: linear-gradient(160deg, #1f1c2c 0%, #3a2c4d 50%, #4a3f6b 100%);
+}
+.theme-snow {
+  background: linear-gradient(160deg, #6a85b6 0%, #a3bded 60%, #e0eafc 100%);
+}
+.theme-mist {
+  background: linear-gradient(160deg, #606c88 0%, #8a96a3 50%, #b6bcc4 100%);
+}
+.theme-night {
+  background: linear-gradient(160deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at 30% 0%,
+    rgba(255, 255, 255, 0.12),
+    transparent 60%
+  );
+  pointer-events: none;
+}
+
+.content {
+  position: relative;
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 32px 20px 60px;
+}
+
+/* ===== ヘッダー ===== */
+.app-header {
+  text-align: center;
+  margin-bottom: 26px;
+}
+.app-header h1 {
+  font-size: 2.2rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+.logo-icon {
+  font-size: 2rem;
+}
+.subtitle {
+  margin-top: 6px;
+  color: var(--text-dim);
+  font-size: 0.95rem;
+}
+
+/* ===== 検索バー ===== */
+.search-bar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+.search-input-wrap {
+  position: relative;
+  flex: 1 1 260px;
+  display: flex;
+  align-items: center;
+}
+.search-icon {
+  position: absolute;
+  left: 14px;
+  font-size: 1rem;
+  opacity: 0.8;
+}
+.search-bar input {
+  width: 100%;
+  padding: 13px 16px 13px 42px;
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  background: var(--card-bg);
+  backdrop-filter: blur(8px);
+  color: var(--text);
+  font-size: 1rem;
+  outline: none;
+  transition: border 0.2s, background 0.2s;
+}
+.search-bar input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+.search-bar input:focus {
+  border-color: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.22);
+}
+.btn {
+  padding: 13px 18px;
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--text);
+  background: var(--card-bg);
+  backdrop-filter: blur(8px);
+  transition: transform 0.12s, background 0.2s, box-shadow 0.2s;
+  white-space: nowrap;
+}
+.btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.btn-primary {
+  background: linear-gradient(135deg, #ffb347, #ffcc33);
+  color: #4a2f00;
+  border: none;
+}
+.btn-ghost {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+/* ===== 状態表示 ===== */
+.error-box {
+  background: rgba(220, 38, 38, 0.25);
+  border: 1px solid rgba(248, 113, 113, 0.6);
+  padding: 12px 16px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+.loader {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-dim);
+  font-size: 1.1rem;
+}
+.location-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 6px 0 16px;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.3);
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 22px 0 12px;
+  color: var(--text-dim);
+}
+
+/* ===== カレンダー ===== */
+.calendar-strip {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scrollbar-width: thin;
+}
+.cal-day {
+  position: relative;
+  flex: 0 0 auto;
+  width: 92px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 12px 8px 10px;
+  border-radius: 16px;
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  backdrop-filter: blur(8px);
+  color: var(--text);
+  cursor: pointer;
+  transition: transform 0.14s, background 0.2s, box-shadow 0.2s;
+}
+.cal-day:hover {
+  transform: translateY(-3px);
+  background: rgba(255, 255, 255, 0.24);
+}
+.cal-day.active {
+  background: rgba(255, 255, 255, 0.92);
+  color: #1a2940;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3);
+  border-color: transparent;
+}
+.cal-day.active .t-min,
+.cal-day.active .cal-weekday {
+  color: #5a6b85;
+}
+.today-badge {
+  position: absolute;
+  top: -8px;
+  background: #ff6b6b;
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+.cal-weekday {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+.we-sat .cal-weekday {
+  color: #7fd1ff;
+}
+.we-sun .cal-weekday {
+  color: #ff9aa2;
+}
+.cal-day.active.we-sat .cal-weekday {
+  color: #2563eb;
+}
+.cal-day.active.we-sun .cal-weekday {
+  color: #dc2626;
+}
+.cal-date {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+.cal-icon {
+  margin: -4px 0;
+}
+.cal-temps {
+  display: flex;
+  gap: 6px;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+.t-max {
+  color: #ffd27f;
+}
+.cal-day.active .t-max {
+  color: #e8821e;
+}
+.t-min {
+  color: var(--text-dim);
+}
+.cal-pop {
+  font-size: 0.72rem;
+  color: #9fd4ff;
+}
+.cal-day.active .cal-pop {
+  color: #2563eb;
+}
+
+/* ===== メイン天気カード ===== */
+.weather-card {
+  margin-top: 18px;
+  padding: 26px;
+  border-radius: var(--radius);
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  backdrop-filter: blur(14px);
+  box-shadow: var(--shadow);
+}
+.wc-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.wc-date {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+.wc-now-badge {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--card-border);
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.wc-main {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 8px 0 18px;
+  flex-wrap: wrap;
+}
+.wc-icon {
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.3));
+}
+.wc-temp {
+  font-size: 4.4rem;
+  font-weight: 800;
+  line-height: 1;
+}
+.wc-temp .deg {
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin-left: 4px;
+}
+.wc-desc {
+  font-size: 1.2rem;
+  margin-top: 4px;
+}
+.wc-feels {
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  margin-top: 2px;
+}
+.wc-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+}
+.stat {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--card-border);
+}
+.stat-highlight {
+  background: rgba(56, 132, 255, 0.28);
+  border-color: rgba(125, 185, 255, 0.6);
+}
+.stat-icon {
+  font-size: 1.5rem;
+}
+.stat-label {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+}
+.stat-value {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+/* ===== 時間別ストリップ ===== */
+.hourly-strip {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+.hour-item {
+  flex: 0 0 auto;
+  width: 84px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 12px 6px;
+  border-radius: 14px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  backdrop-filter: blur(8px);
+}
+.hour-time {
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+.hour-temp {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+.hour-detail {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+}
+.hour-detail.pop {
+  color: #9fd4ff;
+}
+
+/* ===== フッター ===== */
+.app-footer {
+  text-align: center;
+  margin-top: 36px;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+.app-footer a {
+  color: #ffd27f;
+}
+
+@media (max-width: 520px) {
+  .app-header h1 {
+    font-size: 1.7rem;
+  }
+  .wc-temp {
+    font-size: 3.4rem;
+  }
+  .search-bar input {
+    flex: 1 1 100%;
+  }
+}
