@@ -420,6 +420,230 @@ body {
   color: #ffd27f;
 }
 
+/* ===== お気に入り ===== */
+.fav-strip {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.fav-chip {
+  display: flex;
+  align-items: stretch;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  backdrop-filter: blur(8px);
+}
+.fav-chip-main {
+  border: none;
+  background: transparent;
+  color: var(--text);
+  padding: 8px 8px 8px 14px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.fav-chip-main:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.18);
+}
+.fav-chip-main:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.fav-chip-remove {
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  padding: 0 12px;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.fav-chip-remove:hover {
+  background: rgba(220, 38, 38, 0.35);
+  color: #fff;
+}
+
+/* 場所名 + お気に入りトグル */
+.location-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 6px 0 16px;
+}
+.location-row .location-name {
+  margin: 0;
+}
+.fav-toggle {
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  backdrop-filter: blur(8px);
+  color: var(--text);
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.12s, background 0.2s;
+  white-space: nowrap;
+}
+.fav-toggle:hover {
+  transform: translateY(-2px);
+}
+.fav-toggle.on {
+  background: linear-gradient(135deg, #ffb347, #ffcc33);
+  color: #4a2f00;
+  border-color: transparent;
+}
+
+/* ===== AI 服装・持ち物提案 ===== */
+.advice {
+  margin-top: 8px;
+}
+.advice-btn {
+  width: 100%;
+}
+.advice-note {
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--card-border);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+.advice-note.advice-error {
+  background: rgba(220, 38, 38, 0.25);
+  border-color: rgba(248, 113, 113, 0.6);
+}
+.advice-card {
+  padding: 20px;
+  border-radius: var(--radius);
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  backdrop-filter: blur(14px);
+  box-shadow: var(--shadow);
+}
+.advice-summary {
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.6;
+  margin-bottom: 14px;
+}
+.advice-cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+}
+.advice-col {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+.advice-col-title {
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.advice-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.advice-list li {
+  padding-left: 18px;
+  position: relative;
+  font-size: 0.95rem;
+}
+.advice-list li::before {
+  content: "•";
+  position: absolute;
+  left: 4px;
+  color: #ffd27f;
+}
+.advice-again {
+  margin-top: 14px;
+}
+
+/* ===== 雨雲レーダー ===== */
+.radar {
+  margin-top: 22px;
+}
+.radar-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  backdrop-filter: blur(8px);
+  color: var(--text);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.radar-toggle:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+.radar-caret {
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+.radar-body {
+  margin-top: 12px;
+}
+.radar-now {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.radar-live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(220, 38, 38, 0.85);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+.radar-now-text {
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+.radar-map {
+  height: 380px;
+  width: 100%;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--card-border);
+  box-shadow: var(--shadow);
+}
+/* Leaflet 要素は暗背景でも読めるように */
+.radar-map .leaflet-container {
+  background: #aadaff;
+  font-family: inherit;
+}
+.leaflet-control-attribution {
+  font-size: 0.65rem;
+}
+.radar-legend {
+  margin-top: 8px;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
 @media (max-width: 520px) {
   .app-header h1 {
     font-size: 1.7rem;

@@ -39,3 +39,18 @@ export type WeatherResponse = {
   current: CurrentWeather;
   daily: DailyForecast[];
 };
+
+// お気に入り都市（localStorage に保存）
+export type FavoriteCity = {
+  name: string;
+  country: string;
+  lat: number;
+  lon: number;
+};
+
+// AI 服装・持ち物提案
+export type OutfitAdvice = {
+  summary: string;
+  clothing: string[];
+  items: string[];
+};

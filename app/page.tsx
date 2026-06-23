@@ -1,18 +1,33 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { WeatherResponse } from "@/lib/types";
+import type { WeatherResponse, FavoriteCity } from "@/lib/types";
 import { weatherTheme } from "@/lib/utils";
+import {
+  loadFavorites,
+  isFavorite,
+  addFavorite,
+  removeFavorite,
+} from "@/lib/favorites";
 import SearchBar from "./components/SearchBar";
+import Favorites from "./components/Favorites";
 import Calendar from "./components/Calendar";
 import WeatherCard from "./components/WeatherCard";
 import HourlyStrip from "./components/HourlyStrip";
+import RainRadar from "./components/RainRadar";
+import OutfitAdvice from "./components/OutfitAdvice";
 
 export default function Home() {
   const [data, setData] = useState<WeatherResponse | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [favorites, setFavorites] = useState<FavoriteCity[]>([]);
+
+  // お気に入りは初回マウント時に localStorage から読み込む
+  useEffect(() => {
+    setFavorites(loadFavorites());
+  }, []);
 
   const fetchWeather = useCallback(async (params: string, label: string) => {
     setLoading(true);
@@ -70,6 +85,60 @@ export default function Home() {
 
   const isToday = selectedDate === data?.current.date;
 
+  // 現在表示中の地点（緯度経度が取れている場合のみお気に入り対象にできる）
+  const currentCity: FavoriteCity | null = useMemo(() => {
+    if (
+      !data ||
+      typeof data.location.lat !== "number" ||
+      typeof data.location.lon !== "number"
+    ) {
+      return null;
+    }
+    return {
+      name: data.location.name,
+      country: data.location.country,
+      lat: data.location.lat,
+      lon: data.location.lon,
+    };
+  }, [data]);
+
+  const currentIsFav = currentCity ? isFavorite(favorites, currentCity) : false;
+
+  const toggleFavorite = useCallback(() => {
+    if (!currentCity) return;
+    setFavorites((prev) =>
+      isFavorite(prev, currentCity)
+        ? removeFavorite(prev, currentCity)
+        : addFavorite(prev, currentCity)
+    );
+  }, [currentCity]);
+
+  const selectFavorite = useCallback(
+    (c: FavoriteCity) => fetchWeather(`lat=${c.lat}&lon=${c.lon}`, c.name),
+    [fetchWeather]
+  );
+
+  const removeFav = useCallback((c: FavoriteCity) => {
+    setFavorites((prev) => removeFavorite(prev, c));
+  }, []);
+
+  // AI 提案へ渡す天気サマリ（選択中の日に応じて current か daily を使う）
+  const adviceInput = useMemo(() => {
+    if (!data || !selectedDate) return null;
+    return {
+      location: data.location.name,
+      date: selectedDate,
+      isToday,
+      temp: isToday ? data.current.temp : undefined,
+      tempMin: isToday ? data.current.tempMin : selectedDaily?.tempMin,
+      tempMax: isToday ? data.current.tempMax : selectedDaily?.tempMax,
+      description: isToday ? data.current.description : selectedDaily?.description,
+      pop: isToday ? data.current.pop : selectedDaily?.pop,
+      humidity: isToday ? data.current.humidity : selectedDaily?.humidity,
+      windSpeed: isToday ? data.current.windSpeed : undefined,
+    };
+  }, [data, selectedDate, selectedDaily, isToday]);
+
   const theme = useMemo(() => {
     if (!data) return "theme-default";
     if (isToday) return weatherTheme(data.current.main, data.current.icon);
@@ -93,15 +162,35 @@ export default function Home() {
 
         <SearchBar onSearch={searchCity} onGeolocate={useGeolocation} loading={loading} />
 
+        <Favorites
+          favorites={favorites}
+          onSelect={selectFavorite}
+          onRemove={removeFav}
+          loading={loading}
+        />
+
         {error && <div className="error-box">⚠️ {error}</div>}
 
         {loading && !data && <div className="loader">読み込み中…</div>}
 
         {data && (
           <>
-            <div className="location-name">
-              📍 {data.location.name}
-              {data.location.country ? `, ${data.location.country}` : ""}
+            <div className="location-row">
+              <div className="location-name">
+                📍 {data.location.name}
+                {data.location.country ? `, ${data.location.country}` : ""}
+              </div>
+              {currentCity && (
+                <button
+                  type="button"
+                  className={`fav-toggle ${currentIsFav ? "on" : ""}`}
+                  onClick={toggleFavorite}
+                  aria-pressed={currentIsFav}
+                  title={currentIsFav ? "お気に入りから削除" : "お気に入りに追加"}
+                >
+                  {currentIsFav ? "★ お気に入り" : "☆ お気に入りに追加"}
+                </button>
+              )}
             </div>
 
             <Calendar
@@ -118,6 +207,17 @@ export default function Home() {
             />
 
             {selectedDaily && <HourlyStrip hourly={selectedDaily.hourly} />}
+
+            {adviceInput && <OutfitAdvice key={selectedDate} input={adviceInput} />}
+
+            {currentCity && (
+              <RainRadar
+                lat={currentCity.lat}
+                lon={currentCity.lon}
+                name={data.location.name}
+                timezone={data.timezone}
+              />
+            )}
           </>
         )}
 
