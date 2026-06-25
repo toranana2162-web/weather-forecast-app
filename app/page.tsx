@@ -216,6 +216,7 @@ export default function Home() {
                 lon={currentCity.lon}
                 name={data.location.name}
                 timezone={data.timezone}
+                current={data.current}
               />
             )}
           </>

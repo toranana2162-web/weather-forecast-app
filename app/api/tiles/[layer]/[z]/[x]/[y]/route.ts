@@ -45,7 +45,8 @@ export async function GET(
       headers: {
         "Content-Type": "image/png",
         // タイルは変化が緩やかなのでブラウザ/CDN で短時間キャッシュ
-        "Cache-Control": "public, max-age=600, s-maxage=600",
+        // 実況に近い表示のため短めにキャッシュ（クライアントは10分ごとに ?t= を更新）
+        "Cache-Control": "public, max-age=300, s-maxage=300",
       },
     });
   } catch {

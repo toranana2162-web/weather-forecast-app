@@ -1,8 +1,16 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { Map as LeafletMap, CircleMarker } from "leaflet";
+import type { Map as LeafletMap, Circle, CircleMarker } from "leaflet";
+import type { CurrentWeather } from "@/lib/types";
 import "leaflet/dist/leaflet.css";
+
+const PRECIP_MAINS = new Set(["Rain", "Drizzle", "Thunderstorm"]);
+
+// 10分ごとにタイルURLを切り替えてブラウザキャッシュを更新
+function precipTileEpoch(): number {
+  return Math.floor(Date.now() / 600_000);
+}
 
 const WEEKDAYS_JA = ["日", "月", "火", "水", "木", "金", "土"];
 
@@ -25,17 +33,23 @@ export default function RainRadar({
   lon,
   name,
   timezone,
+  current,
 }: {
   lat: number;
   lon: number;
   name: string;
   timezone: number;
+  current: CurrentWeather;
 }) {
   const [open, setOpen] = useState(false);
   const [nowLabel, setNowLabel] = useState<string | null>(null);
+  const [tileEpoch, setTileEpoch] = useState(precipTileEpoch);
   const mapElRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<LeafletMap | null>(null);
   const markerRef = useRef<CircleMarker | null>(null);
+  const rainZoneRef = useRef<Circle | null>(null);
+
+  const isRainingNow = PRECIP_MAINS.has(current.main);
 
   // 現在時刻は client でのみ算出（SSR とのハイドレーション不一致を避ける）。1分ごとに更新。
   useEffect(() => {
@@ -43,6 +57,12 @@ export default function RainRadar({
     const id = setInterval(() => setNowLabel(nowInCity(timezone)), 60_000);
     return () => clearInterval(id);
   }, [timezone]);
+
+  // 降水タイルは10分ごとに再取得
+  useEffect(() => {
+    const id = setInterval(() => setTileEpoch(precipTileEpoch()), 600_000);
+    return () => clearInterval(id);
+  }, []);
 
   // 表示トグルに合わせて地図を生成/破棄
   useEffect(() => {
@@ -55,29 +75,50 @@ export default function RainRadar({
 
       const map = L.map(mapElRef.current, {
         center: [lat, lon],
-        zoom: 8,
+        zoom: 9,
         scrollWheelZoom: false,
       });
       mapRef.current = map;
 
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "&copy; OpenStreetMap contributors",
+      // 地図の色味を抑えたベースにして降水レイヤーを目立たせる
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
+        attribution: "&copy; OpenStreetMap &copy; CARTO",
+        maxZoom: 19,
+        subdomains: "abcd",
+      }).addTo(map);
+
+      // 雲レイヤー（薄く）— 降水と重ねて雨域の輪郭を補助
+      L.tileLayer(`/api/tiles/clouds_new/{z}/{x}/{y}?t=${tileEpoch}`, {
+        opacity: 0.35,
         maxZoom: 18,
+        className: "radar-cloud-tiles",
       }).addTo(map);
 
       // 雨雲（降水）レイヤー — サーバー経由でキーを隠す
-      L.tileLayer("/api/tiles/precipitation_new/{z}/{x}/{y}", {
-        opacity: 0.65,
+      L.tileLayer(`/api/tiles/precipitation_new/{z}/{x}/{y}?t=${tileEpoch}`, {
+        opacity: 1,
         maxZoom: 18,
+        className: "radar-precip-tiles",
       }).addTo(map);
 
       markerRef.current = L.circleMarker([lat, lon], {
-        radius: 8,
+        radius: 9,
         color: "#ffffff",
-        weight: 2,
+        weight: 2.5,
         fillColor: "#ff5a5a",
         fillOpacity: 0.95,
       }).addTo(map);
+
+      if (isRainingNow) {
+        rainZoneRef.current = L.circle([lat, lon], {
+          radius: 12_000,
+          color: "#2563eb",
+          weight: 2,
+          dashArray: "8 6",
+          fillColor: "#3b82f6",
+          fillOpacity: 0.18,
+        }).addTo(map);
+      }
     })();
 
     return () => {
@@ -86,17 +127,19 @@ export default function RainRadar({
         mapRef.current.remove();
         mapRef.current = null;
         markerRef.current = null;
+        rainZoneRef.current = null;
       }
     };
-    // 開閉時のみ再構築。位置変更は下の effect で追従。
+    // 開閉・タイル更新・実況の雨で地図を再構築。位置変更は下の effect で追従。
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
+  }, [open, tileEpoch, isRainingNow]);
 
   // 場所が変わったら中心とマーカーを移動
   useEffect(() => {
     if (mapRef.current) {
       mapRef.current.setView([lat, lon], mapRef.current.getZoom());
       markerRef.current?.setLatLng([lat, lon]);
+      rainZoneRef.current?.setLatLng([lat, lon]);
     }
   }, [lat, lon]);
 
@@ -119,11 +162,17 @@ export default function RainRadar({
             <span className="radar-now-text">
               {nowLabel ? `${name}の現在 ${nowLabel} 時点の雨雲` : "現在の雨雲を表示中…"}
             </span>
+            {isRainingNow && (
+              <span className="radar-local-rain">
+                🌧️ この地点の実況: {current.description}
+              </span>
+            )}
           </div>
           <div ref={mapElRef} className="radar-map" />
           <p className="radar-legend">
             ⚠️ これは<strong>カレンダーで選んだ日付ではなく、いまこの瞬間（リアルタイム）の雨雲</strong>です。
-            青〜赤がかかっている地域ほど降水が強いことを表します（データ: OpenWeatherMap）。
+            青〜赤ほど降水が強いことを表します。地図は全球モデル由来のため、
+            <strong>小雨や局地的な雨は地図に出ないことがあります</strong>（その場合は上の実況バッジを参照）。
           </p>
         </div>
       )}

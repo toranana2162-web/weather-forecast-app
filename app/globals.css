@@ -632,8 +632,27 @@ body {
 }
 /* Leaflet 要素は暗背景でも読めるように */
 .radar-map .leaflet-container {
-  background: #aadaff;
+  background: #c8d8e8;
   font-family: inherit;
+}
+/* 降水タイルのコントラストを上げて薄い雨も見やすくする */
+.radar-map .radar-precip-tiles {
+  filter: saturate(1.7) contrast(1.4) brightness(1.08);
+}
+.radar-map .radar-cloud-tiles {
+  filter: saturate(1.2) contrast(1.1);
+}
+.radar-local-rain {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(37, 99, 235, 0.2);
+  border: 1px solid rgba(37, 99, 235, 0.45);
+  color: #dbeafe;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
 }
 .leaflet-control-attribution {
   font-size: 0.65rem;
